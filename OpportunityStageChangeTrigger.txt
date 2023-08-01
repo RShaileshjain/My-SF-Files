@@ -1,0 +1,28 @@
+trigger OpportunityChange on Opportunity (before insert) {
+if(trigger.isupdate && trigger.isAfter){
+        List<Messaging.SingleEmailMessage> emailList = new List<Messaging.SingleEmailMessage>();
+       
+        for(Opportunity opportunity : [SELECT Id,Name,StageName,Account.Id,Account.Email__c
+                                       WHERE Id IN :Trigger.New])
+        {
+          System.debug(Account.Name+' '+Account.Email__c);
+          Messaging.singleEmailMessage email = new Messaging.singleEmailMessage();
+            String[] toAddress = new String{ Account.Email__c, shaileshjain.sf@gmail.com};
+            email.setToAddress(toAddress);
+            
+            email.setToReply('noreply to any email');
+            email.setSenderDisplayName('SalesForce');
+            
+            email.TargetObjectId (Account.Id);
+            email.setSubject('Opportunity Stage change Info');
+            
+            email.setPlainTextBody('Opportunity Stage has been updated successfully');
+            emailList.add(email);
+        } 
+    if(!emailList.isEmpty()){
+        system.debug(emailList) 
+        Messaging.sendEmailResult[] result = Messaging.sendEmail(emailList);
+        system.debug(result);
+    }
+  }   
+}                                       
