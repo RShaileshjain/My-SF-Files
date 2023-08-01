@@ -1,9 +1,9 @@
+
 trigger accountTrigger2 on Account (before insert) {
 
     If(Trigger.isBefore && Trigger.isInsert) {
         AccountTriggerHandler.handleBeforeInsert(trigger.New);
-           
-        
+   
     }   
 }
 
@@ -49,3 +49,4 @@ public static void handleBeforeInsert(List<Account> newAccountList)
     }
     }
 }
+
