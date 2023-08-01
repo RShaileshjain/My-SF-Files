@@ -1,28 +1,42 @@
-trigger OpportunityChange on Opportunity (before insert) {
-if(trigger.isupdate && trigger.isAfter){
+trigger OpportunityChange on Opportunity (after update) {
+
+    if(trigger.isupdate && trigger.isafter){
+        
         List<Messaging.SingleEmailMessage> emailList = new List<Messaging.SingleEmailMessage>();
-       
-        for(Opportunity opportunity : [SELECT Id,Name,StageName,Account.Id,Account.Email__c
-                                       WHERE Id IN :Trigger.New])
+    
+        for(Opportunity oldList : Trigger.old)
+        {   
+        
+        for(Opportunity opportunity : [SELECT Id,Name,StageName,Account.Email__c
+                                       FROM Opportunity WHERE Id IN :Trigger.New])
         {
-          System.debug(Account.Name+' '+Account.Email__c);
-          Messaging.singleEmailMessage email = new Messaging.singleEmailMessage();
-            String[] toAddress = new String{ Account.Email__c, shaileshjain.sf@gmail.com};
-            email.setToAddress(toAddress);
             
-            email.setToReply('noreply to any email');
+
+            if((oldList.Id == opportunity.Id) && (oldList.StageName != opportunity.StageName))
+              {
+                            
+            
+            Messaging.singleEmailMessage email = new Messaging.singleEmailMessage();
+            
+            List<String> toAddress = new List<String>{opportunity.Account.Email__c};
+            email.setToAddresses(toAddress);
+            
+            email.setReplyTo('noreply@yahoo.com');
             email.setSenderDisplayName('SalesForce');
-            
-            email.TargetObjectId (Account.Id);
+                                    
             email.setSubject('Opportunity Stage change Info');
             
-            email.setPlainTextBody('Opportunity Stage has been updated successfully');
+            email.setPlainTextBody('Opportunity Name '+opportunity.Name+'From Opportunity Stage '
+                                   +oldList.StageName+' To Opportunity Stage'+opportunity.StageName 
+                                   +' has been updated successfully');
             emailList.add(email);
-        } 
-    if(!emailList.isEmpty()){
-        system.debug(emailList) 
+              } 
+          }
+          }
+    
+    if(!emailList.isEmpty()){      
         Messaging.sendEmailResult[] result = Messaging.sendEmail(emailList);
         system.debug(result);
     }
-  }   
-}                                       
+  }
+}
