@@ -1,0 +1,51 @@
+trigger accountTrigger2 on Account (before insert) {
+
+    If(Trigger.isBefore && Trigger.isInsert) {
+        AccountTriggerHandler.handleBeforeInsert(trigger.New);
+           
+        
+    }   
+}
+
+
+public class AccountTriggerHandler {
+public static void handleBeforeInsert(List<Account> newAccountList)
+    {
+     for(Account account : NewAccountList){
+            
+            
+        If (account.BillingStreet == null || account.BillingStreet == ' '){    
+            account.BillingStreet.AddError('enter Billing Street'); 
+        } else {            
+            account.ShippingStreet = account.BillingStreet;
+        }
+            
+        If (account.BillingCity == null || account.BillingCity == ' '){    
+            account.BillingCity.addError('enter Billing City');
+        } else {
+            
+            account.ShippingCity = account.BillingCity;
+        }    
+        
+        If (account.BillingState == null || account.BillingState == ' '){    
+            account.BillingState.addError('enter BillingState');    
+        } else {
+            account.ShippingState = account.BillingState;
+            
+        }
+            
+        If ((account.BillingPostalCode == null) || (account.BillingPostalCode == ' ')){    
+            account.BillingPostalCode.addError('enter BillingPostalCode');
+        } else {
+            account.ShippingPostalCode = account.BillingPostalCode;
+            
+        }
+       
+         If (account.BillingCountry == null || account.BillingCountry == ''){    
+             account.BillingCountry.addError('enter BillingCountry');
+        } else {
+             account.ShippingCountry = account.BillingCountry;
+        }       
+    }
+    }
+}
