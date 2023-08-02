@@ -1,20 +1,20 @@
+
 trigger accountOpportunityUpdate on Account (before update) {
     
-    If(Trigger.isBefore && Trigger.isUpdate){
+    If(Trigger.isbefore && Trigger.isUpdate){
     
-    for(Account account : [SELECT Id,Name,Total_Amount__c,
-                          (SELECT Name,Amount FROM Opportunities)
-                           FROM Account WHERE Id In :Trigger.New]){
+    for(Account account : Trigger.new){
         Decimal OpportunityAmount = 0;
         
-        for(Opportunity opportunity : account.opportunities){             
+        for(Opportunity opportunity : [SELECT Name,Amount FROM Opportunity // here (Opportunity opportunity : account.Opportunities) not                                                              WHERE AccountId = :account.Id])                 //      working.
+                                                             
+        {             
             OpportunityAmount = OpportunityAmount+opportunity.Amount;
     
         }
       
-        account.Total_Amount__c=OpportunityAmount;
-        system.debug(account.id+' '+account.Name+' '+account.Total_Amount__c+OpportunityAmount);       
+        account.Total_Amount__c = OpportunityAmount;      
     }                 
     
     }
-}                                           
+}                                        
