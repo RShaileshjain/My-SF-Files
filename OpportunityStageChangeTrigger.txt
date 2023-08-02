@@ -4,15 +4,13 @@ trigger OpportunityChange on Opportunity (after update) {
         
         List<Messaging.SingleEmailMessage> emailList = new List<Messaging.SingleEmailMessage>();
     
-        for(Opportunity oldList : Trigger.old)
-        {   
-        
+                
         for(Opportunity opportunity : [SELECT Id,Name,StageName,Account.Email__c
-                                       FROM Opportunity WHERE Id IN :Trigger.New])
+                                                             FROM Opportunity WHERE Id IN :Trigger.New])
         {
             
-
-            if((oldList.Id == opportunity.Id) && (oldList.StageName != opportunity.StageName))
+          If(opportunity.StageName != Trigger.oldMap.get(opportunity.Id).StageName ) 
+            
               {
                             
             
@@ -27,12 +25,12 @@ trigger OpportunityChange on Opportunity (after update) {
             email.setSubject('Opportunity Stage change Info');
             
             email.setPlainTextBody('Opportunity Name '+opportunity.Name+'From Opportunity Stage '
-                                   +oldList.StageName+' To Opportunity Stage'+opportunity.StageName 
+                                   +Trigger.OldMap.get(opportunity.Id).StageName+' To Opportunity Stage'+opportunity.StageName 
                                    +' has been updated successfully');
             emailList.add(email);
               } 
           }
-          }
+          
     
     if(!emailList.isEmpty()){      
         Messaging.sendEmailResult[] result = Messaging.sendEmail(emailList);
