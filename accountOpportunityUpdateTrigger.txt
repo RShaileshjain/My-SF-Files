@@ -6,7 +6,10 @@ trigger accountOpportunityUpdate on Account (before update) {
     for(Account account : Trigger.new){
         Decimal OpportunityAmount = 0;
         
-        for(Opportunity opportunity : [SELECT Name,Amount FROM Opportunity // here (Opportunity opportunity : account.Opportunities) not                                                              WHERE AccountId = :account.Id])                 //      working.
+        for(Opportunity opportunity : [SELECT Name,Amount FROM Opportunity  WHERE AccountId = :account.Id])        
+        
+        // here (Opportunity opportunity : account.Opportunities) not         
+        //      working.
                                                              
         {             
             OpportunityAmount = OpportunityAmount+opportunity.Amount;
