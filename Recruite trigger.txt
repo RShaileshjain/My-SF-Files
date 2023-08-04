@@ -1,0 +1,65 @@
+trigger syncRecruitedData on Recruiter__c (after Update) {
+    
+    if(Trigger.isAfter && Trigger.isUpdate)
+    { 
+        integer count=0;
+        for(Recruiter__c Recruiter : trigger.new)
+        {
+            Recruiter__c oldRecruiter = trigger.oldmap.get(Recruiter.Id);
+            
+            if((oldRecruiter.Name          != Recruiter.Name)||
+               (oldRecruiter.Contact_No__c != Recruiter.Contact_No__c )||
+               (oldRecruiter.Email__c      != Recruiter.Email__c )||
+               (oldRecruiter.Location__c   != Recruiter.Location__c ))
+            {
+                count=count+1;
+                System.debug('rc count '+count);
+            }        
+         }  
+         if(count>0)
+         {
+             System.debug('rc trigger start');   
+             RecruitedDataHandler.afterUpdate(trigger.new);
+         }   
+ }
+}
+
+
+
+public class RecruitedDataHandler{
+    static integer count = 0;
+    public static void afterUpdate(List<Recruiter__c> listOfRecruiter)
+    {   
+        If(!listOfRecruiter.isEmpty() && count<1)
+        {    
+        Set<Id> hiringManagerId = new Set<Id>();
+        for(Recruiter__c Recruiter1:listOfRecruiter )
+        {
+            hiringManagerId.add(Recruiter1.hiring_manager__c);
+        }
+        
+        List<Hiring_Manager__c> listOfHiringManager = [SELECT Id, Name, Location__c, Email__c, Contact_No__c 
+                                                       FROM Hiring_Manager__c WHERE Id IN :hiringManagerId ];
+        
+        Map<Id, Hiring_Manager__c> mapOfHiringManager = new Map<Id, Hiring_Manager__c>();
+        
+        for(Hiring_Manager__c hiringManager1 : listOfHiringManager)
+        {
+            mapOfHiringManager.put(hiringManager1.Id,hiringManager1);            
+        }
+        List<Hiring_Manager__c>listOfhiringManager2 = new List<Hiring_Manager__c>();
+        for(Recruiter__c Recruiter:listOfRecruiter )
+        {
+            Hiring_Manager__c hiringManager = mapOfHiringManager.get(Recruiter.Hiring_Manager__c);
+            hiringManager.Name = Recruiter.Name;
+            hiringManager.Contact_No__c = Recruiter.Contact_No__c;
+            hiringManager.Email__c = Recruiter.Email__c;
+            hiringManager.Location__c= Recruiter.Location__c;
+            listOfHiringManager2.add(hiringManager);
+        }
+        update listOfhiringManager2;
+        System.debug('count rec '+ count);    
+        count++;
+        }     
+    }
+}
