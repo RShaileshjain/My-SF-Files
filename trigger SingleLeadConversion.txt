@@ -5,11 +5,13 @@ trigger LeadConversionSingle on Lead (after update) {
         Database.LeadConvert leadConvert = new Database.LeadConvert();
         LeadStatus leadStatus = [SELECT Id, MasterLabel, IsConverted, IsDefault FROM LeadStatus
                                  WHERE IsConverted = True];
-        for(Lead lead : trigger.new){
+        
+            for(Lead lead : trigger.new){
             
             if(lead.rating == 'Hot' && lead.Status == leadStatus.MasterLabel && lead.IsConverted == false){
                 LeadConvert.setLeadId(lead.Id);
                 LeadConvert.setSendNotificationEmail(true);
+                LeadConvert.setOpportunityName('Lead Converted Opportunity'+lead.company);
                 LeadConvert.setDoNotCreateOpportunity(false);
                 LeadConvert.setConvertedStatus(leadStatus.MasterLabel);               
             }
