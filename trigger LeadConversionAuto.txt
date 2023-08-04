@@ -1,0 +1,25 @@
+trigger LeadConversionAuto on Lead (after update) {
+        
+        if(trigger.isAfter && trigger.isUpdate)
+        {
+          List<Database.LeadConvert> leadConvertList = new List<Database.LeadConvert>();
+            LeadStatus leadStatus = [SELECT Id, MasterLabel, IsConverted, IsDefault FROM LeadStatus
+                                     WHERE IsConverted = True];
+            
+            for(Lead lead : trigger.new)
+            {
+                if(lead.rating == 'Hot' && lead.Status == leadStatus.MasterLabel && lead.IsConverted == false){
+                    Database.LeadConvert leadConvert = new Database.LeadConvert();
+                    LeadConvert.setLeadId(lead.Id);
+                    LeadConvert.setSendNotificationEmail(true);
+                    LeadConvert.setOpportunityName('Lead Converted Opportunity'+lead.company);
+                    LeadConvert.setDoNotCreateOpportunity(false);
+                    LeadConvert.setConvertedStatus(leadStatus.MasterLabel); 
+                    leadConvertList.add(leadConvert);
+                }
+              }
+                    Database.LeadConvertResult[] result = Database.convertLead(leadConvertList,false);
+                    System.debug(result);
+        }
+    
+ }
