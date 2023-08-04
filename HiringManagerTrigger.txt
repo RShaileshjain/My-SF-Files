@@ -1,0 +1,86 @@
+trigger syncHiringmanagerData on Hiring_Manager__c (after insert,after update) {
+
+    if(Trigger.isAfter && Trigger.isInsert)
+    {
+        HiringManagerDataHandler.afterInsert(trigger.new);
+    }
+    
+    
+    if(Trigger.isAfter && Trigger.isUpdate)
+    {
+        integer count =0;
+        for(Hiring_Manager__c hiringManager : trigger.new)
+        {   
+            Hiring_Manager__c oldHiringManager = trigger.oldMap.get(hiringManager.Id);
+               //if(trigger.new != trigger.old)
+               
+             If((oldHiringManager.Name != hiringManager.Name)||
+              (oldHiringManager.Contact_No__c != hiringManager.Contact_No__c)||
+              (oldHiringManager.Email__c != hiringManager.Email__c)||
+              (oldHiringManager.Location__c != hiringManager.Location__c))
+            {
+                count=count+1;
+                system.debug('hm count '+ count);
+            }
+         }
+         if(count>0)
+         {
+             system.debug('Hm trigger start....');
+             HiringManagerDataHandler.afterUpdate(trigger.newMap);
+         }  
+    }
+}
+
+
+
+public class HiringManagerDataHandler {
+    static integer count = 0;
+    public static void afterInsert(List<Hiring_Manager__c> HiringManagerList)
+    {   
+                  
+        if(!HiringManagerList.isEmpty())
+        {   
+            List<recruiter__c> recruiterList = new List<recruiter__c>();
+            for(Hiring_Manager__c HiringManager : HiringManagerList)
+            {
+        Recruiter__c recruiter = new Recruiter__c();
+            recruiter.Name              = HiringManager.Name;
+            recruiter.Contact_No__c     = HiringManager.Contact_No__c;
+            recruiter.Email__c          = HiringManager.Email__c;    
+            recruiter.Location__c       = HiringManager.Location__c;
+            recruiter.Hiring_Manager__c = HiringManager.Id;
+            recruiterList.add(recruiter);
+            }
+            if(!recruiterList.isEmpty())
+            {
+                insert recruiterList;
+            }
+        }
+            
+    }
+    public static void afterUpdate(Map<Id, Hiring_Manager__c> mapOfHiringManager)
+    {
+        System.debug('class method start');    
+        List<Recruiter__c> recruiterList =[SELECT Id, Name, Contact_No__c, Email__c, Location__c,
+                                           Hiring_Manager__c FROM Recruiter__c 
+                                           WHERE Hiring_Manager__c IN :mapOfHiringManager.keyset()];
+        if(!recruiterList.isEmpty()  && count<1)
+        {
+           
+        for(Recruiter__c recruiter : recruiterList )
+        {
+            Hiring_Manager__c HiringManager = mapOfHiringManager.get(recruiter.Hiring_Manager__c);
+           
+            recruiter.Name              = HiringManager.Name;
+            recruiter.Contact_No__c     = HiringManager.Contact_No__c;
+            recruiter.Email__c          = HiringManager.Email__c;    
+            recruiter.Location__c       = HiringManager.Location__c;
+        }    
+   
+            
+        }   
+        update recruiterList;
+        system.debug('count hm '+count);
+        count++;
+    }    
+}        
