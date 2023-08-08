@@ -76,9 +76,8 @@ public class ShareAccountHandler {
         }
  
         
-        List<AccountShare> AccountShareDeleteList = [SELECT Id, AccountId, UserOrGroupId FROM AccountShare
-                                                     WHERE UserOrGroupId IN :AccountShareIdSet];
-        Delete AccountShareDeleteList;
+         Database.delete([SELECT Id, AccountId, UserOrGroupId FROM AccountShare
+                          WHERE UserOrGroupId IN :AccountShareIdSet], false);
           
         
            }
